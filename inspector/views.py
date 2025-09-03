@@ -1,4 +1,4 @@
-import json
+import os
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
@@ -22,73 +22,47 @@ def datasets(request):
         name = request.POST.get("name") or (f.name if f else None)
         if not f or not name:
             return HttpResponseBadRequest("Missing file or name")
+
+        mode = request.POST.get("mode", "auto")  # "auto" (default) | "replace" | "error"
+
+        # Si pidieron reemplazar, actualiza el archivo del dataset existente
+        if mode == "replace":
+            existing = Dataset.objects.filter(name=name).first()
+            if existing:
+                # borra archivo previo para no dejar huérfanos
+                if existing.file:
+                    existing.file.delete(save=False)
+                existing.file = f
+                existing.save()
+                # invalida cache para reprocesar
+                _profiles_cache.pop(existing.pk, None)
+                try:
+                    f.close()
+                except Exception:
+                    pass
+                return JsonResponse({"id": existing.pk, "name": existing.name, "replaced": True})
+
+        # Si no reemplaza y el nombre existe, decide qué hacer
+        if Dataset.objects.filter(name=name).exists():
+            if mode == "error":
+                return JsonResponse({"error": "Ya existe un dataset con ese nombre."}, status=409)
+            # auto-rename: Nombre (2).ext, (3), ...
+            base, ext = os.path.splitext(name)
+            i = 2
+            new_name = f"{base} ({i}){ext}"
+            while Dataset.objects.filter(name=new_name).exists():
+                i += 1
+                new_name = f"{base} ({i}){ext}"
+            name = new_name
+
         ds = Dataset.objects.create(name=name, file=f)
-        
         try:
-            f.close()  # TemporaryUploadedFile.close() elimina el archivo del TMP
+            f.close()  # libera el tmp inmediatamente
         except Exception:
             pass
-        # warm cache lazily
         return JsonResponse({"id": ds.pk, "name": ds.name})
 
-    # GET list
-    data = [{"id": d.pk, "name": d.name, "uploaded_at": d.uploaded_at.isoformat()} for d in Dataset.objects.order_by("-uploaded_at")]
+    # GET: lista datasets
+    data = [{"id": d.pk, "name": d.name, "uploaded_at": d.uploaded_at.isoformat()}
+            for d in Dataset.objects.order_by("-uploaded_at")]
     return JsonResponse({"datasets": data})
-
-@require_http_methods(["GET"])
-def dataset_detail(request, pk: int):
-    ds = get_object_or_404(Dataset, pk=pk)
-    return JsonResponse({"id": ds.pk, "name": ds.name, "uploaded_at": ds.uploaded_at.isoformat()})
-
-@require_http_methods(["GET"])
-def summary(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse(p.overview())
-
-@require_http_methods(["GET"])
-def missing(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse({"missing_by_column": p.missing_by_col()})
-
-@require_http_methods(["GET"])
-def duplicates(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse({"duplicates_sample": p.duplicates_sample(), "count": p.overview()["duplicate_rows"]})
-
-@require_http_methods(["GET"])
-def dtypes(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse({"dtypes": p.dtypes_summary()})
-
-@require_http_methods(["GET"])
-def nunique(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse({"nunique": p.nunique_by_col()})
-
-@require_http_methods(["GET"])
-def columns(request, pk: int):
-    p = _get_profile(pk)
-    return JsonResponse({"columns": p.columns()})
-
-@require_http_methods(["GET"])
-def histogram(request, pk: int):
-    col = request.GET.get("col")
-    bins = int(request.GET.get("bins", 20))
-    if not col:
-        return HttpResponseBadRequest("Missing col")
-    p = _get_profile(pk)
-    if col not in p.df.columns:
-        return HttpResponseBadRequest("Unknown column")
-    return JsonResponse(p.histogram(col, bins))
-
-@require_http_methods(["GET"])
-def corr_pairs(request, pk: int):
-    p = _get_profile(pk)
-    k = int(request.GET.get("k", 20))
-    return JsonResponse({"pairs": p.corr_top_pairs(k)})
-
-@require_http_methods(["GET"])
-def head(request, pk: int):
-    p = _get_profile(pk)
-    n = int(request.GET.get("n", 5))
-    return JsonResponse({"head": p.df.head(n).to_dict(orient="records")})
