@@ -4,8 +4,8 @@ services:
     env: python
     plan: free
     region: oregon
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
-    startCommand: gunicorn datainspector.wsgi --preload --log-file -
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: bash -c "python manage.py migrate --noinput && gunicorn datainspector.wsgi --preload --log-file -"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: datainspector.settings
@@ -13,10 +13,13 @@ services:
         value: "1"
       - key: SECRET_KEY
         generateValue: true
-      - key: DATA_DIR               # donde montaremos el disco
+      - key: DATA_DIR
         value: /opt/render/project/src/data
       - key: MEDIA_ROOT
         value: /opt/render/project/src/data/media
+      # opcional y recomendable en prod:
+      - key: DEBUG
+        value: "0"
     disk:
       name: data
       mountPath: /opt/render/project/src/data
