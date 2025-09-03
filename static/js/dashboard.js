@@ -1,18 +1,4 @@
 // Minimal dashboard that calls the Django API in real time and renders charts with Chart.js
-// static/js/dashboard.js -> onUpload
-const res = await fetch("/api/datasets/", { method: "POST", body });
-if (!res.ok) {
-  let msg = "Error al subir archivo";
-  try {
-    const e = await res.json();
-    msg = e.error || JSON.stringify(e);
-  } catch {
-    msg = await res.text();
-  }
-  alert(msg);
-  return;
-}
-
 
 let state = {
   datasetId: null,
