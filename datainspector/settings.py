@@ -72,9 +72,7 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", DATA_DIR / "media"))
 
 # Whitenoise: serve compressed static files
 STORAGES = {
@@ -82,8 +80,8 @@ STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
-            "location": BASE_DIR / "media",   # carpeta física
-            "base_url": "/media/",            # URL pública
+            "location": MEDIA_ROOT,   # carpeta física
+            "base_url": MEDIA_URL,            # URL pública
         },
     },
 
