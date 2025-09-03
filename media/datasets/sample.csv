@@ -1,0 +1,8 @@
+id,name,age,city,income,joined_at
+1,Ana,28,Mexico City,35000,2022-01-15
+2,Carlos,35,Guadalajara,42000,2021-11-02
+3,Luisa,,Monterrey,50000,2023-05-10
+4,Pedro,28,Mexico City,35000,2022-01-15
+5,,42,Puebla,,2020-07-21
+6,Ana,28,Mexico City,35000,2022-01-15
+7,María,31,Querétaro,47000,2024-03-12

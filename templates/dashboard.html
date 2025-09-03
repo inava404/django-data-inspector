@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Inspector • Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-7xl mx-auto p-6 space-y-6">
+    <header class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Data Inspector</h1>
+      <form id="upload-form" class="flex items-center gap-2">
+        <input class="block text-sm" type="text" name="name" placeholder="Nombre del dataset" required>
+        <input class="block text-sm" type="file" name="file" accept=".csv" required>
+        <button class="px-3 py-2 rounded-lg bg-slate-900 text-white">Cargar CSV</button>
+      </form>
+    </header>
+
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div class="p-4 bg-white rounded-xl shadow"><div class="text-xs text-slate-500">Filas</div><div id="kpi-rows" class="text-2xl font-semibold">—</div></div>
+      <div class="p-4 bg-white rounded-xl shadow"><div class="text-xs text-slate-500">Columnas</div><div id="kpi-cols" class="text-2xl font-semibold">—</div></div>
+      <div class="p-4 bg-white rounded-xl shadow"><div class="text-xs text-slate-500">Memoria</div><div id="kpi-mem" class="text-2xl font-semibold">—</div></div>
+      <div class="p-4 bg-white rounded-xl shadow"><div class="text-xs text-slate-500">Duplicados</div><div id="kpi-dup" class="text-2xl font-semibold">—</div></div>
+      <div class="p-4 bg-white rounded-xl shadow"><div class="text-xs text-slate-500">Nulos</div><div id="kpi-miss" class="text-2xl font-semibold">—</div></div>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="p-4 bg-white rounded-xl shadow">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold">Nulos por columna</h2>
+        </div>
+        <canvas id="chart-missing" height="160"></canvas>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow">
+        <h2 class="font-semibold mb-2">Distribución de tipos</h2>
+        <canvas id="chart-dtypes" height="160"></canvas>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow">
+        <h2 class="font-semibold mb-2">Cardinalidad (valores únicos)</h2>
+        <canvas id="chart-nunique" height="160"></canvas>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="font-semibold">Histograma por columna</h2>
+          <select id="hist-col" class="border rounded px-2 py-1 text-sm"></select>
+        </div>
+        <canvas id="chart-hist" height="160"></canvas>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow">
+        <h2 class="font-semibold mb-2">Top correlaciones (abs)</h2>
+        <canvas id="chart-corr" height="160"></canvas>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow">
+        <h2 class="font-semibold mb-2">Muestra de duplicados</h2>
+        <table id="dups-table" class="w-full text-sm border border-slate-200 rounded"></table>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl shadow xl:col-span-2">
+        <h2 class="font-semibold mb-2">Vista previa del dataset</h2>
+        <table id="preview-table" class="w-full text-sm border border-slate-200 rounded"></table>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
