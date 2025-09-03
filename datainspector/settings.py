@@ -3,6 +3,10 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Donde montaremos el disco en Render (ruta por defecto si no se pone env var)
+DATA_DIR = Path(os.environ.get("DATA_DIR", BASE_DIR / "data"))
+DATA_DIR.mkdir(parents=True, exist_ok=True)  # seguro en local
+
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.environ.get("DEBUG", "1") == "1"
 ALLOWED_HOSTS = ["*"]
@@ -49,10 +53,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "datainspector.wsgi.application"
 
+# DB dentro de DATA_DIR (persistente en Render)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DATA_DIR / "db.sqlite3",
     }
 }
 
