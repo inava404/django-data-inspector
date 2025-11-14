@@ -10,7 +10,8 @@ urlpatterns = [
     path('datasets/<int:pk>/dtypes/', views.dtypes, name='dtypes'),
     path('datasets/<int:pk>/nunique/', views.nunique, name='nunique'),
     path('datasets/<int:pk>/columns/', views.columns, name='columns'),
-    path('datasets/<int:pk>/histogram/', views.histogram, name='histogram'),
+    path("datasets/<str:dataset_id>/outliers/", OutlierView.as_view()),
+    
     path('datasets/<int:pk>/corr/', views.corr_pairs, name='corr_pairs'),
     path('datasets/<int:pk>/head/', views.head, name='head'),
 ]

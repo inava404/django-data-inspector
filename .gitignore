@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+
+media/
+datasets/*.csv
+!datasets/.keep        # archivo vacío para mantener la carpeta
+
+*.sqlite3
